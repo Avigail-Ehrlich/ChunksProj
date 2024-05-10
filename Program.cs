@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -42,10 +42,10 @@ namespace ConsoleApp2
 
             }
 
-            ex.WordsToAdd.ExceptWith(ex.WordFromClientExistInDB);
+            ex.WordsToAdd.ExceptWith(ex.WordsFromClientExistInDB);
 
             ex.Print();
-            Console.WriteLine(DateTime.Now);
+            Console.WriteLine("\n" + DateTime.Now);
             Console.ReadLine();
 
 
@@ -58,20 +58,20 @@ namespace ConsoleApp2
         {
             WordsToAdd = new HashSet<string>();
             WordsToRemove = new HashSet<string>();
-            WordFromClientExistInDB = new HashSet<string>();
+            WordsFromClientExistInDB = new HashSet<string>();
         }
 
         public HashSet<string> WordsFromDB { get; set; }
         public HashSet<string> WordsToAdd { get; set; }
         public HashSet<string> WordsToRemove { get; set; }
         public HashSet<string> ClientWords { get; set; }
-        public HashSet<string> WordFromClientExistInDB { get; set; }
+        public HashSet<string> WordsFromClientExistInDB { get; set; }
 
 
         public void SendToProcess()
         {
 
-            ClientWords.ExceptWith(WordFromClientExistInDB);
+            ClientWords.ExceptWith(WordsFromClientExistInDB);
 
             foreach (string word in ClientWords)
             {
@@ -81,47 +81,37 @@ namespace ConsoleApp2
 
         public void ProcessList(string clientWord)
         {
-            //אם המילה נמצאת בDB תשמור אותה.
             if (WordsFromDB.Contains(clientWord))
             {
-                WordFromClientExistInDB.Add(clientWord);
+                WordsFromClientExistInDB.Add(clientWord);
                 return;
             }
 
-            //עבור מחיקת פירות - אם הערך שהמשתמש הכניס מתחיל ב- בדיקה האם הערך בלעדיו נמצא בDB ואם כן הסרה שלו
-            if (clientWord.StartsWith("-"))
+            if (clientWord.StartsWith("-") && WordsFromDB.Contains(clientWord.Substring(1)))
             {
-                if (WordsFromDB.Contains(clientWord.Substring(1)))
-                {
-                    WordsToRemove.Add(clientWord.Substring(1));
-                    return;
-                }
+                WordsFromClientExistInDB.Add(clientWord);
+                WordsToRemove.Add(clientWord.Substring(1));
+                return;
             }
-            else
-            {
-                if (WordFromClientExistInDB.Contains(clientWord))
-                    return;
-                WordsToAdd.Add(clientWord);
-            }
+
+    
+            _ = !WordsFromClientExistInDB.Contains(clientWord) && !clientWord.StartsWith("-") && WordsToAdd.Add(clientWord);
+
         }
+
         public void Print()
         {
-            Console.WriteLine("fruits to add: ");
-            Console.WriteLine("------------------");
-            foreach (var word in WordsToAdd)
-            {
-                Console.WriteLine(word);
-            }
 
-            Console.WriteLine("\n");
+            Console.WriteLine("\nfruits to add: ");
+            string wordsToAddString = string.Join(", ", WordsToAdd);
+            Console.WriteLine(wordsToAddString);
 
-            Console.WriteLine("fruits to remove: ");
-            Console.WriteLine("------------------");
-            foreach (var word in WordsToRemove)
-            {
-                Console.WriteLine(word);
-            }
+            Console.WriteLine("\nfruits to remove: ");
+            string wordsToRemoveString = string.Join(", ", WordsToRemove);
+            Console.WriteLine(wordsToRemoveString);
+
 
         }
+
     }
 }
